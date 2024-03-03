@@ -1,38 +1,58 @@
-# create-svelte
+# Music Frontend
 
-Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/main/packages/create-svelte).
+This repository contains the frontend code for a Music Frontend project, a web application that allows users to explore Music concerts, setlists, and song performances. The project is built using Svelte and integrates with backend services to fetch and display concert and song data.
 
-## Creating a project
+## Service Interaction Diagram
 
-If you're seeing this, you've probably already done this step. Congrats!
+Below is a sequence diagram showing how the frontend interacts with the [Concert](https://github.com/zjromani/concertservice) and [Song](https://github.com/zjromani/songservice) services, as well as external APIs to retrieve data:
 
-```bash
-# create a new project in the current directory
-npm create svelte@latest
+```mermaid
+sequenceDiagram
+    participant User
+    participant Frontend Service
+    participant Concert Service
+    participant MusicVendor API
+    participant Song Service
+    participant MusicVendor API
 
-# create a new project in my-app
-npm create svelte@latest my-app
+    User->>+Frontend Service: Search concerts by date/location or open text
+    Frontend Service->>+Concert Service: Request concerts data
+    Concert Service->>+MusicVendor API: Fetch concert data
+    MusicVendor API->>-Concert Service: Return concert data
+    Concert Service->>-Frontend Service: Return concerts data
+    Frontend Service->>-User: Display concerts list
+
+    User->>+Frontend Service: Select a concert
+    Frontend Service->>+Concert Service: Request concert details
+    Concert Service->>+MusicVendor API: Fetch concert details
+    MusicVendor API->>-Concert Service: Return concert details
+    Concert Service->>+Song Service: Request songs for concert via gRPC
+    Song Service->>+MusicVendor API: Fetch songs data
+    MusicVendor API->>-Song Service: Return songs data
+    Song Service->>-Concert Service: Return enriched concert details
+    Concert Service->>-Frontend Service: Return concert details with songs
+    Frontend Service->>-User: Display concert details and songs
+
+    User->>+Frontend Service: Search songs by open text
+    Frontend Service->>+Song Service: Request songs data
+    Song Service->>+MusicVendor API: Fetch songs data
+    MusicVendor API->>-Song Service: Return songs data
+    Song Service->>-Frontend Service: Return songs data
+    Frontend Service->>-User: Display songs list
 ```
 
-## Developing
+## Learning Goals
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+This project and related backend services aim to provide hands on learning with:
 
-```bash
-npm run dev
+- Svelte for Dynamic UIs
+- gRPC & Kotlin
+- Micronaut
+- GraphQL Integration
+- Event-Driven Architecture with Kafka
+- Domain-Driven Design (DDD)
+- API Design
+- GitOps for Continuous Deployment
+  - Terraform
+  - Docker & Kubernetes
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
-
-## Building
-
-To create a production version of your app:
-
-```bash
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
