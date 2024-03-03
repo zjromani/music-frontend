@@ -4,7 +4,7 @@ This repository contains the frontend code for a Music Frontend project, a web a
 
 ## Service Interaction Diagram
 
-Below is a sequence diagram showing how the frontend interacts with the [Concert](https://github.com/zjromani/concertservice) and [Song](https://github.com/zjromani/songservice) services, as well as external APIs to retrieve data:
+Below is a sequence diagram showing how the frontend interacts with the [Music BE](https://github.com/zjromani/music-service) and [Song](https://github.com/zjromani/songservice) services, as well as external APIs to retrieve data:
 
 
 ```mermaid
