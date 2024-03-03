@@ -6,39 +6,45 @@ This repository contains the frontend code for a Music Frontend project, a web a
 
 Below is a sequence diagram showing how the frontend interacts with the [Concert](https://github.com/zjromani/concertservice) and [Song](https://github.com/zjromani/songservice) services, as well as external APIs to retrieve data:
 
+
 ```mermaid
 sequenceDiagram
     participant User
-    participant Frontend Service
-    participant Concert Service
-    participant MusicVendor API
-    participant Song Service
-    participant MusicVendor API
+    participant Frontend as Svelte Frontend
+    participant GraphQL as GraphQL Server
+    participant MusicSvc as Music Service
+    participant PredictionSvc as Music Prediction Service
+    participant DB as Database
+    participant Kafka as Kafka Event Bus
+    participant ExternalAPI as External MusicVendor API
 
-    User->>+Frontend Service: Search concerts by date/location or open text
-    Frontend Service->>+Concert Service: Request concerts data
-    Concert Service->>+MusicVendor API: Fetch concert data
-    MusicVendor API->>-Concert Service: Return concert data
-    Concert Service->>-Frontend Service: Return concerts data
-    Frontend Service->>-User: Display concerts list
+    User->>Frontend: Requests data (concerts, songs, artists)
+    Frontend->>GraphQL: GraphQL query
+    GraphQL->>MusicSvc: Fetch requested data
+    MusicSvc->>DB: Check for cached data
+    DB->>MusicSvc: Return cached data (if fresh)
+    alt Data not fresh or not found
+        MusicSvc->>ExternalAPI: Fetch latest data
+        ExternalAPI->>MusicSvc: Return new data
+        MusicSvc->>DB: Update cache with new data
+    end
+    MusicSvc->>GraphQL: Return data to GraphQL
+    GraphQL->>Frontend: Display data to user
 
-    User->>+Frontend Service: Select a concert
-    Frontend Service->>+Concert Service: Request concert details
-    Concert Service->>+MusicVendor API: Fetch concert details
-    MusicVendor API->>-Concert Service: Return concert details
-    Concert Service->>+Song Service: Request songs for concert via gRPC
-    Song Service->>+MusicVendor API: Fetch songs data
-    MusicVendor API->>-Song Service: Return songs data
-    Song Service->>-Concert Service: Return enriched concert details
-    Concert Service->>-Frontend Service: Return concert details with songs
-    Frontend Service->>-User: Display concert details and songs
+    alt Polling for Updates
+        loop Every X minutes
+            MusicSvc->>ExternalAPI: Poll for updates
+            ExternalAPI->>MusicSvc: Send updates
+            MusicSvc->>DB: Update cached data
+            MusicSvc->>Kafka: Publish update events
+        end
+    end
 
-    User->>+Frontend Service: Search songs by open text
-    Frontend Service->>+Song Service: Request songs data
-    Song Service->>+MusicVendor API: Fetch songs data
-    MusicVendor API->>-Song Service: Return songs data
-    Song Service->>-Frontend Service: Return songs data
-    Frontend Service->>-User: Display songs list
+    Kafka->>PredictionSvc: Consume update events
+    PredictionSvc->>PredictionSvc: Generate predictive insights
+    PredictionSvc->>GraphQL: Provide insights to GraphQL
+    GraphQL->>Frontend: Update user with predictive insights
+
 ```
 
 ## Learning Goals
